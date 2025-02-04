@@ -1,0 +1,55 @@
+---
+name: pillow
+
+on:
+  release:
+    types: [created]
+
+env:
+  IMAGE_NAME: pillow
+
+jobs:
+  build:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get faas-cli
+        run: curl -sLSf https://cli.openfaas.com | sudo sh
+
+      - name: Pull template
+        run: faas-cli template store pull python3-flask-debian
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get TAG
+        id: get_tag
+        run: echo ::set-output name=TAG::latest-dev
+
+      - name: Get Repo Owner
+        id: get_repo_owner
+        run: >
+          echo ::set-output name=repo_owner::$(echo ${{ github.repository_owner }} |
+          tr '[:upper:]' '[:lower:]')
+
+      - name: Docker Login
+        run: > 
+          echo ${{secrets.GITHUB_TOKEN}} | 
+          docker login ghcr.io --username 
+          ${{ steps.get_repo_owner.outputs.repo_owner }} 
+          --password-stdin
+
+      - name: Publish functions
+        run: >
+          OWNER="${{ steps.get_repo_owner.outputs.repo_owner }}" 
+          TAG="latest"
+          faas-cli publish
+          --extra-tag ${{ github.sha }}
+          --build-arg GO111MODULE=on
+          --platforms linux/amd64

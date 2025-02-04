@@ -1,0 +1,11 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://faas.addr.se
+functions:
+  pillow:
+    lang: python3-flask-debian
+    handler: ./pillow
+    image: ghcr.io/stenstromen/pillow:latest
+    environment:
+      RAW_BODY: True
