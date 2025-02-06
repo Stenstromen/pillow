@@ -20,7 +20,7 @@ jobs:
         run: curl -sLSf https://cli.openfaas.com | sudo sh
 
       - name: Pull template
-        run: faas-cli template store pull python3-flask-debian
+        run: faas-cli template store pull python3-http-debian
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
